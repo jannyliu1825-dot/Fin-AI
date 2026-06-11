@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 智能整合工作站</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* 自定義頁籤切換過渡動畫 */
+        .tab-active {
+            background-color: #4f46e5; /* Tailwind indigo-600 */
+            color: white;
+            border-color: #4f46e5;
+        }
+        .tab-inactive {
+            background-color: #1e293b; /* Tailwind slate-800 */
+            color: #94a3b8; /* Tailwind slate-400 */
+            border-color: #334155; /* Tailwind slate-700 */
+        }
+        .tab-inactive:hover {
+            background-color: #334155;
+            color: #f8fafc;
+        }
+        
+        /* 隱藏滾動條但保留滾動功能 (適用於外層) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+    <!-- 頂部導覽列 (Header) -->
+    <header class="bg-slate-900 border-b border-slate-800 p-4 shadow-lg z-20 sticky top-0">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <!-- 標題圖示 -->
+                <div class="p-2 bg-indigo-500/10 rounded-lg">
+                    <svg class="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <!-- 系統標題 -->
+                <h1 class="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400">
+                    AI 智能整合工作站
+                </h1>
+            </div>
+            <div class="text-sm px-4 py-1.5 bg-slate-800 rounded-full border border-slate-700 text-slate-300 flex items-center gap-2 shadow-inner">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Gradio 系統運行中
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要內容區 (Main Content) -->
+    <main class="flex-grow flex flex-col max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">
+
+        <!-- 頁籤控制區 (Tabs Controls) -->
+        <div class="flex flex-wrap gap-3 mb-6 border-b border-slate-800/50 pb-6">
+            <!-- 按鈕 1：交易指標 -->
+            <button onclick="switchTab('tab1')" id="btn-tab1" class="tab-active border px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2.5 shadow-lg transform active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                </svg>
+                金融交易指標分析
+            </button>
+
+            <!-- 按鈕 2：RAG 問答 -->
+            <button onclick="switchTab('tab2')" id="btn-tab2" class="tab-inactive border px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2.5 shadow-lg transform active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                </svg>
+                RAG 智能問答系統
+            </button>
+        </div>
+
+        <!-- Iframe 顯示容器 -->
+        <div class="flex-grow bg-slate-900 rounded-2xl shadow-2xl border border-slate-700/50 overflow-hidden relative min-h-[650px] lg:min-h-[750px] ring-1 ring-white/5">
+            
+            <!-- 載入動畫 (可選) -->
+            <div id="loader" class="absolute inset-0 z-0 flex flex-col items-center justify-center bg-slate-900 text-slate-400">
+                <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-indigo-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="animate-pulse">正在初始化系統模組...</p>
+            </div>
+
+            <!-- CODE01: 交易指標 Iframe -->
+            <div id="content-tab1" class="w-full h-full absolute inset-0 z-10 opacity-100 transition-opacity duration-500 ease-in-out bg-white/5">
+                <iframe
+                    src="https://cjhuang1681688-yfinance-index.hf.space"
+                    frameborder="0"
+                    class="w-full h-full rounded-2xl"
+                    allow="clipboard-read; clipboard-write;"
+                    title="金融交易指標分析"
+                    onload="hideLoader()"
+                ></iframe>
+            </div>
+
+            <!-- CODE02: RAG 系統 Iframe -->
+            <div id="content-tab2" class="w-full h-full absolute inset-0 z-0 opacity-0 pointer-events-none transition-opacity duration-500 ease-in-out bg-white/5">
+                <iframe
+                    src="https://llmrobert-rag-chromedb.hf.space"
+                    frameborder="0"
+                    class="w-full h-full rounded-2xl"
+                    allow="clipboard-read; clipboard-write;"
+                    title="RAG 智能問答系統"
+                ></iframe>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 底部 (Footer) -->
+    <footer class="bg-slate-950 py-6 text-center text-slate-500 text-sm border-t border-slate-900 mt-auto">
+        <p>© 2024 AI 智能整合工作站. Powered by Gradio & Hugging Face.</p>
+    </footer>
+
+    <!-- JavaScript 邏輯 -->
+    <script>
+        // 隱藏載入動畫
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        // 切換頁籤邏輯
+        function switchTab(tabId) {
+            const btn1 = document.getElementById('btn-tab1');
+            const btn2 = document.getElementById('btn-tab2');
+            const content1 = document.getElementById('content-tab1');
+            const content2 = document.getElementById('content-tab2');
+
+            // 基礎樣式類別 (包含圖標和其他共用設定)
+            const activeClass = 'tab-active border px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2.5 shadow-lg transform active:scale-95';
+            const inactiveClass = 'tab-inactive border px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2.5 shadow-lg transform active:scale-95';
+
+            if (tabId === 'tab1') {
+                // 更新按鈕狀態
+                btn1.className = activeClass;
+                btn2.className = inactiveClass;
+
+                // 顯示 Tab 1, 隱藏 Tab 2
+                content1.classList.replace('z-0', 'z-10');
+                content1.classList.replace('opacity-0', 'opacity-100');
+                content1.classList.remove('pointer-events-none');
+
+                content2.classList.replace('z-10', 'z-0');
+                content2.classList.replace('opacity-100', 'opacity-0');
+                content2.classList.add('pointer-events-none');
+            } else {
+                // 更新按鈕狀態
+                btn2.className = activeClass;
+                btn1.className = inactiveClass;
+
+                // 顯示 Tab 2, 隱藏 Tab 1
+                content2.classList.replace('z-0', 'z-10');
+                content2.classList.replace('opacity-0', 'opacity-100');
+                content2.classList.remove('pointer-events-none');
+
+                content1.classList.replace('z-10', 'z-0');
+                content1.classList.replace('opacity-100', 'opacity-0');
+                content1.classList.add('pointer-events-none');
+            }
+        }
+    </script>
+</body>
+</html>
